@@ -1,0 +1,32 @@
+# Dependencies and generated builds
+/node_modules/
+/dist/
+/output/
+/release/
+/work/
+/coverage/
+*.tsbuildinfo
+
+# Private configuration, presentation files and runtime data
+/config.json
+/config.*.json
+!/config.example.json
+!/config.second.example.json
+/empty.png
+/media/
+/data/
+/cache/
+*.log
+*.dmp
+*.lnk
+.env
+.env.*
+!.env.example
+
+# Editor and OS state
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp

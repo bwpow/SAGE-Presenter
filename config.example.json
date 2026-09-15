@@ -1,0 +1,16 @@
+{
+  "instanceName": "SAGE Presenter",
+  "monitor": 1,
+  "alwaysOnTop": true,
+  "listenHost": "127.0.0.1",
+  "listenPort": 49731,
+  "emptyImage": "",
+  "mediaRoot": "./media",
+  "dataFolder": "./data",
+  "imageDurationSeconds": 7,
+  "transitionMilliseconds": 180,
+  "fit": "contain",
+  "volume": 1,
+  "mute": false,
+  "missingMonitor": "hide"
+}

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: presenter-media:; media-src presenter-media: blob:; connect-src presenter-media:; font-src 'self'">
+  <title>SAGE Presenter</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="surface">
+    <div id="stage"></div>
+    <section id="welcome">
+      <div id="empty-picture"></div>
+      <span id="app-version">SAGE Presenter</span>
+    </section>
+    <section id="library" hidden>
+      <div id="grid" role="listbox" aria-label="Media files"></div>
+    </section>
+    <img id="snapshot" alt="" hidden>
+    <div id="loading" role="status" aria-label="Loading" hidden><span class="spinner"></span></div>
+  </main>
+  <div id="notice" role="status" hidden></div>
+  <script type="module" src="renderer.js"></script>
+</body>
+</html>
