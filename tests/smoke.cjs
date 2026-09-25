@@ -304,7 +304,28 @@ async function launch(configPath, windowed = true) {
     console.log('Real page:', await evaluate(first, '({title:document.title,links:document.links.length,ready:document.readyState})', 'web'));
     await screenshot(first, 'web-fixture.png', 'web');
   });
+  await check('Hide persists across display changes; Resume and tray Show restore without changing content', async () => {
+    const before = await command(49781, 'Status');
+    assert.equal((await datagram('Hide')).hidden, true);
+    assert.equal(await first.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0].isVisible()), false);
+    await first.evaluate(({ screen }) => screen.emit('display-metrics-changed', {}, screen.getPrimaryDisplay(), ['bounds']));
+    assert.equal((await command(49781, 'Status')).hidden, true);
+    assert.equal((await command(49781, 'Status')).revision, before.revision);
+    assert.equal((await command(49781, 'Resume')).hidden, false);
+    assert.equal((await datagram('Resume')).revision, before.revision);
+    assert.equal(await first.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0].isVisible()), true);
+    assert.equal((await command(49781, 'Hide')).hidden, true);
+    await first.evaluate(() => globalThis.presenterTestMenu.items.find(item => item.label === 'Show presentation').click());
+    assert.equal((await command(49781, 'Status')).hidden, false);
+    assert.equal((await command(49781, 'Status')).url, before.url);
+  });
   await fs.writeFile(path.join(work, 'results.json'), JSON.stringify({ passed: results, date: new Date().toISOString(), executable: process.env.PRESENTER_EXE || 'development' }, null, 2));
+  await check('Quit replies and shuts down only its own instance', async () => {
+    const closed = first.waitForEvent('close');
+    assert.equal((await datagram('Quit')).ok, true);
+    await closed; first = null;
+    await assert.rejects(command(49781, 'Status'));
+  });
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(async () => {
   if (second) await second.close().catch(() => {});
   if (first) await first.close().catch(() => {});

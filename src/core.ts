@@ -31,9 +31,9 @@ export function parseCommand(line: string): Command {
   if (type === 'url' && tokens.length === 1) return { type, url: validUrl(tokens[0]!) };
   if (['folder', 'autofolder', 'thumbs'].includes(type ?? '') && tokens.length >= 1 && tokens.length <= 2)
     return { type: type as 'folder' | 'autofolder' | 'thumbs', folder: tokens[0]!, file: tokens[1] };
-  if (['next', 'previous', 'enter', 'status', 'clear', 'empty'].includes(type ?? '') && tokens.length === 0)
-    return { type: type as 'next' | 'previous' | 'enter' | 'status' | 'clear' | 'empty' };
-  throw new Error('Expected URL, Folder, AutoFolder, Thumbs, Next, Previous, Enter, Empty, Status or Clear.');
+  if (['next', 'previous', 'enter', 'status', 'clear', 'empty', 'quit', 'hide', 'resume'].includes(type ?? '') && tokens.length === 0)
+    return { type: type as 'next' | 'previous' | 'enter' | 'status' | 'clear' | 'empty' | 'quit' | 'hide' | 'resume' };
+  throw new Error('Expected URL, Folder, AutoFolder, Thumbs, Next, Previous, Enter, Empty, Status, Clear, Quit, Hide or Resume.');
 }
 export function validUrl(value: string): string {
   const url = new URL(value);

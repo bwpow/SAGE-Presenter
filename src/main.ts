@@ -67,6 +67,7 @@ let webLoaded = false;
 let loadToken = 0;
 let failures = 0;
 let displayMissing = false;
+let hiddenToTray = false;
 let queue = Promise.resolve();
 let pendingCommands = 0;
 let server: net.Server;
@@ -95,11 +96,21 @@ function status() {
   return { ok: true, instanceName: config.instanceName, processId: process.pid, daemonized: process.argv.includes('--daemon-child'), port: config.listenPort, configPath, dataFolder: config.dataFolder, instanceDataFolder: dataPath, mode: state.mode,
     revision: state.revision, url: state.mode === 'web' ? web.webContents.getURL() || state.url : state.url,
     folder: state.folder, file: state.items[state.index]?.name ?? null, index: state.index, count: state.items.length,
-    auto: state.auto, displayMissing, webVisible };
+    auto: state.auto, displayMissing, webVisible, hidden: !win.isVisible() };
 }
 async function dispatch(command: Command) {
   if (command.type === 'status') return status();
   if (command.type === 'clear') { await clearAndReload(); return status(); }
+  if (command.type === 'hide') { hiddenToTray = true; win.hide(); return status(); }
+  if (command.type === 'resume') {
+    if (hiddenToTray) { hiddenToTray = false; applyDisplay(); }
+    return status();
+  }
+  if (command.type === 'quit') {
+    const reply = status();
+    setTimeout(() => app.quit(), 100);
+    return reply;
+  }
   let next: State;
   if (command.type === 'folder' || command.type === 'autofolder' || command.type === 'thumbs') {
     const listing = await readFolder(config.mediaRoot, command.folder, command.file);
@@ -200,14 +211,14 @@ function orderedDisplays() {
 }
 function applyDisplay() {
   if (closing || !win) return;
-  if (testWindow) { win.setBounds({ x: 40, y: 40, width: 1100, height: 740 }); win.show(); layout(); return; }
+  if (testWindow) { if (hiddenToTray) { win.hide(); return; } win.setBounds({ x: 40, y: 40, width: 1100, height: 740 }); win.show(); layout(); return; }
   const displays = orderedDisplays();
   let target = config.displayId === undefined ? displays[config.monitor - 1] : displays.find(display => display.id === config.displayId);
   displayMissing = !target;
   if (!target && config.missingMonitor === 'primary') target = screen.getPrimaryDisplay();
-  if (!target) {
+  if (!target || hiddenToTray) {
     win.hide();
-    tray?.setToolTip(`${config.instanceName} — waiting for monitor ${config.monitor} — TCP ${config.listenPort}`);
+    tray?.setToolTip(!target ? `${config.instanceName} — waiting for monitor ${config.monitor} — TCP ${config.listenPort}` : `${config.instanceName} — hidden — TCP ${config.listenPort}`);
   } else {
     win.setBounds(target.bounds);
     win.setAlwaysOnTop(config.alwaysOnTop, 'screen-saver');
@@ -216,6 +227,11 @@ function applyDisplay() {
     tray?.setToolTip(`${config.instanceName} — monitor ${config.monitor} — TCP ${config.listenPort}`);
   }
   rebuildTray();
+}
+function showPresentation() {
+  hiddenToTray = false;
+  applyDisplay();
+  if (!displayMissing && win.isVisible()) win.focus();
 }
 function layout() {
   if (!media || !web) return;
@@ -237,12 +253,12 @@ function rebuildTray() {
     { label: config.instanceName, enabled: false },
     { label: `TCP 127.0.0.1:${config.listenPort}`, enabled: false },
     { type: 'separator' },
-    { label: 'Show presentation', click: () => { applyDisplay(); if (!displayMissing) win.focus(); } },
+    { label: 'Show presentation', click: showPresentation },
     { label: 'Identify displays', click: identifyDisplays },
     { label: 'Display (this run)', submenu: orderedDisplays().map((display, index) => ({
       label: `${index + 1}: ${display.label || 'Display'} (${display.size.width} × ${display.size.height}, ID ${display.id})`,
       type: 'radio' as const, checked: config.displayId === undefined ? config.monitor === index + 1 : config.displayId === display.id,
-      click: () => { config.monitor = index + 1; config.displayId = display.id; applyDisplay(); }
+      click: () => { config.monitor = index + 1; config.displayId = display.id; showPresentation(); }
     })) },
     { label: 'Clear cache and reload', click: () => { void enqueue({ type: 'clear' }).catch(error => notice(String(error))); } },
     { type: 'separator' },
@@ -388,14 +404,14 @@ app.whenReady().then(async () => {
   });
   const icon = nativeImage.createFromPath(path.join(__dirname, 'icon.png'));
   tray = new Tray(icon.resize({ width: 32, height: 32 }));
-  tray.on('double-click', () => { applyDisplay(); if (!displayMissing) win.focus(); });
+  tray.on('double-click', showPresentation);
   rebuildTray();
   win.on('resize', layout);
   win.on('closed', () => app.quit());
   screen.on('display-added', applyDisplay);
   screen.on('display-removed', applyDisplay);
   screen.on('display-metrics-changed', applyDisplay);
-  app.on('second-instance', () => { applyDisplay(); if (!displayMissing) win.focus(); });
+  app.on('second-instance', showPresentation);
   powerSaveBlocker.start('prevent-display-sleep');
   await media.webContents.loadFile(path.join(__dirname, 'index.html'));
   applyDisplay();

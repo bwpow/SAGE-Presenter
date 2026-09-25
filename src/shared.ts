@@ -12,7 +12,7 @@ export interface State {
 export type Command =
   | { type: 'url'; url: string }
   | { type: 'folder' | 'autofolder' | 'thumbs'; folder: string; file?: string }
-  | { type: 'next' | 'previous' | 'enter' | 'status' | 'clear' | 'empty' }
+  | { type: 'next' | 'previous' | 'enter' | 'status' | 'clear' | 'empty' | 'quit' | 'hide' | 'resume' }
   | { type: 'select'; index: number };
 export interface RenderMessage { state: State; config: Config; appInfo: { name: string; version: string }; snapshot?: string; }
 export interface PresenterAPI {

@@ -2,7 +2,7 @@
 
 A portable desktop presenter for interactive webpages, images and videos, controlled from a Stream Deck or any local UDP/TCP client. Built with Electron and TypeScript for a laptop-and-external-display workflow.
 
-**This application was fully vibe coded by gpt-6 Astra.** Its implementation was generated through conversational AI-assisted development. Contributions, reproducible bug reports and independent review are welcome.
+**This application was fully vibe coded with GPT-6 Astra and GPT-6 Sol.** Its implementation was generated through conversational AI-assisted development. Contributions, reproducible bug reports and independent review are welcome.
 
 The project is free and dedicated to the public domain under **CC0 1.0 Universal**. This repository currently provides source code only, with no GitHub releases or downloadable binaries.
 
@@ -74,6 +74,9 @@ TCP is also available on the same numeric port. End each command with a line fee
 | `Empty` | Stop playback and show the Empty page |
 | `Clear` | Clear cache and reload current content |
 | `Status` | Return instance, display and playback diagnostics |
+| `Hide` | Hide this instance's presentation window to its tray icon; playback and listeners continue |
+| `Resume` | Show a window hidden by Hide; do nothing if it is already shown |
+| `Quit` | Close this instance cleanly, including its window, tray and listeners |
 
 Examples are placeholders: supply your own server and media. Names are case-insensitive. Quote paths containing spaces; Windows backslashes are literal. Folder paths may be relative to `mediaRoot` or absolute inside it. Multiple URL buttons can point to different pages.
 

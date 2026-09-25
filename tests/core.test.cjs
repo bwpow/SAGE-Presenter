@@ -57,6 +57,13 @@ test('Empty is the initial mode, cancels automatic media and ignores navigation'
   assert.equal(validateConfig({ emptyImage: '../logo.png' }, directory).emptyImage, path.resolve(directory, '../logo.png'));
   assert.throws(() => validateConfig({ emptyImage: 123 }, directory));
 });
+
+test('Quit, Hide and Resume are case-insensitive commands without arguments', () => {
+  for (const name of ['Quit', 'Hide', 'Resume']) {
+    assert.deepEqual(parseCommand(name.toUpperCase()), { type: name.toLowerCase() });
+    assert.throws(() => parseCommand(`${name} extra`));
+  }
+});
 test('folder scan sorts deterministically, excludes directories, and validates start file and root', async () => {
   const root = path.resolve('work/core-tests'); await fs.mkdir(root, { recursive: true });
   const fixture = await fs.mkdtemp(path.join(root, 'scan-'));

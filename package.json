@@ -1,7 +1,7 @@
 {
   "name": "sage-presenter",
   "productName": "SAGE Presenter",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "Offline, socket-controlled web and media presentation player",
   "main": "dist/main.js",
